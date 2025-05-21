@@ -127,7 +127,7 @@ const refreshAccessToken = async (req, res) => {
   const incomingRefreshToken = req.body.refreshToken;
 
   if (!incomingRefreshToken) {
-    throw new ApiResponse(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request");
   }
 
   const decodedToken = jwt.verify(
@@ -136,7 +136,7 @@ const refreshAccessToken = async (req, res) => {
   );
 
   if (!decodedToken) {
-    throw new ApiResponse(401, "Invalid Refresh Token");
+    throw new ApiError(401, "Invalid Refresh Token");
   }
 
   const user = await User.findById(decodedToken?._id);
