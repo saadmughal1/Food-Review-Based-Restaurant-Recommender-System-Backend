@@ -32,10 +32,15 @@ const signup = async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const existingUser = await User.findOne({ email });
+  const existingEmailUser = await User.findOne({ email });
+  const existingUsernameUser = await User.findOne({ username });
 
-  if (existingUser) {
-    throw new ApiError(409, "Email already in use");
+  if (existingEmailUser) {
+    throw new ApiError(409, "Email already taken");
+  }
+
+  if (existingUsernameUser) {
+    throw new ApiError(409, "Username already taken");
   }
 
   const user = await User.create({
@@ -69,7 +74,7 @@ const login = async (req, res) => {
   const user = await User.findOne({ username });
 
   if (!user || !(await user.isPasswordCorrect(password))) {
-    throw new ApiError(401, "Invalid email or password");
+    throw new ApiError(401, "Invalid username or password");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -130,14 +135,18 @@ const refreshAccessToken = async (req, res) => {
     process.env.REFRESH_TOKEN_SECRET
   );
 
-  const user = await User.findById(decodedToken?._id);
-
-  if (!user) {
+  if (!decodedToken) {
     throw new ApiResponse(401, "Invalid Refresh Token");
   }
 
+  const user = await User.findById(decodedToken?._id);
+
+  if (!user) {
+    throw new ApiError(401, "Invalid Refresh Token");
+  }
+
   if (incomingRefreshToken !== user?.refreshToken) {
-    throw new ApiResponse(401, "Refresh token is expired");
+    throw new ApiError(401, "Refresh token is expired");
   }
 
   const { accessToken, refreshToken: newRefreshToken } =
