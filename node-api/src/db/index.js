@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const connectDB = async () => {
   try {
     const connectionInstance = await mongoose.connect(
-      `${process.env.MONGODB_URI}/${process.env.DB_NAME}`
+      // `${process.env.MONGODB_URI}/${process.env.DB_NAME}` // for local
+      `${process.env.MONGODB_URI}` // for production
     );
     console.log(`MongoDB connected: ${connectionInstance.connection.host}`);
   } catch (error) {
