@@ -165,4 +165,39 @@ const refreshAccessToken = async (req, res) => {
     );
 };
 
-export { signup, login, logout, refreshAccessToken };
+const update = async (req, res) => {
+  const { firstName, lastName, email } = req.body;
+
+  if (
+    [firstName, lastName, email].some(
+      (field) => !field || field.trim() === ""
+    )
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const existingUser = await User.findOne({ email });
+  console.log(req.user)
+
+  if (existingUser && existingUser._id.toString() !== req.user) {
+    throw new ApiError(409, "Email is already in use by another user");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user,
+    {
+      firstName,
+      lastName,
+      email,
+    },
+    { new: true }
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "User updated successfully"));
+};
+
+
+
+export { signup, login, logout, refreshAccessToken, update };
