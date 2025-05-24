@@ -17,10 +17,10 @@ app.use(cookieParser());
 
 // routes
 import UserRouter from "./routes/user.routes.js";
-
-
+import PlaceRouter from "./routes/place.routes.js";
 
 app.use("/api/user/", UserRouter);
+app.use("/api/place/", PlaceRouter);
 
 
 app.use("/", (_, res) => res.send("server is running"));
