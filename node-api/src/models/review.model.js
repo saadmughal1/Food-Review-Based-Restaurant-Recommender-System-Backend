@@ -19,11 +19,10 @@ const ReviewSchema = mongoose.Schema(
       type: Number,
       required: true
     },
-    date: {
-      type: Date,
-      required: true
+    relative_time_description: {
+      type: String,
     },
-    review: {
+    text: {
       type: String,
       required: true
     },

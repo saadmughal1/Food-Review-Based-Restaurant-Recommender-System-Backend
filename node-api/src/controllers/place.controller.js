@@ -1,5 +1,7 @@
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import Review from '../models/review.model.js'
+
 
 import axios from 'axios'
 
@@ -65,7 +67,21 @@ const place = async (req, res) => {
             throw new ApiError(404, "No place found with placeid: " + placeid);
         }
 
+
+        const reviews = await Review.find({ placeId: placeid })
+
+        if (reviews.length === 0) {
+            return res.json(placeDetails);
+        }
+
+        if (placeDetails.reviews && Array.isArray(placeDetails.reviews)) {
+            placeDetails.reviews.push(...reviews);
+        } else {
+            placeDetails.reviews = reviews;
+        }
+
         return res.json(placeDetails);
+
     } catch (error) {
         console.log(error);
         throw new ApiError(500, "Failed to fetch place details");

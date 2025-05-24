@@ -5,7 +5,7 @@ import User from "../models/user.model.js"
 
 const add = async (req, res) => {
     const _id = req.user;
-    const { rating, date, text, placeId } = req.body;
+    const { rating, text, placeId } = req.body;
 
     const user = await User.findById(_id)
 
@@ -13,8 +13,7 @@ const add = async (req, res) => {
         author_name: user.firstName + " " + user.lastName,
         user: _id,
         rating,
-        date,
-        review: text,
+        text,
         placeId
     });
 
