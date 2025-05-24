@@ -1,0 +1,37 @@
+import mongoose from "mongoose";
+
+const ReviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: true,
+      ref: 'User',
+    },
+    author_name: {
+      type: String,
+      required: true
+    },
+    placeId: {
+      type: String,
+      required: true
+    },
+    rating: {
+      type: Number,
+      required: true
+    },
+    date: {
+      type: Date,
+      required: true
+    },
+    review: {
+      type: String,
+      required: true
+    },
+
+  },
+  { timestamps: true }
+);
+
+const Review = mongoose.model("Review", ReviewSchema);
+
+export default Review;

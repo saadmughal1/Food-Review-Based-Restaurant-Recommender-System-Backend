@@ -11,11 +11,11 @@ const save = async (req, res) => {
     let preference = await Preference.findOne({ user: _id });
 
     if (!preference) {
-        const newPreference = await new Preference.create({
+        const newPreference = await Preference.create({
             user: _id,
             cuisine: cuisinePreferences,
         });
-        res.status(200).json(new ApiResponse(201, newPreference, "Cuisine added successfully"));
+        return res.status(200).json(new ApiResponse(201, newPreference, "Cuisine added successfully"));
     }
 
     preference = await Preference.findByIdAndUpdate(
@@ -24,7 +24,7 @@ const save = async (req, res) => {
         { new: true }
     );
 
-    res.status(200).json(new ApiResponse(200, preference, "Cuisine updated successfully"))
+    return res.status(200).json(new ApiResponse(200, preference, "Cuisine updated successfully"))
 }
 
 const loadPreferences = async (req, res) => {
