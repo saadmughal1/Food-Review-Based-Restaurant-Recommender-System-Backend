@@ -27,5 +27,14 @@ const save = async (req, res) => {
     res.status(200).json(new ApiResponse(200, preference, "Cuisine updated successfully"))
 }
 
+const loadPreferences = async (req, res) => {
+    const _id = req.user;
+    const preferences = await Preference.findOne({ user: _id });
+    if (!preferences) {
+        return res.status(200).json(new ApiResponse(200, {}, "No preferences available"));
+    }
+    return res.status(200).json(new ApiResponse(200, preferences, "Cusines fetched successfully"));
+}
 
-export { save };
+
+export { save, loadPreferences };
