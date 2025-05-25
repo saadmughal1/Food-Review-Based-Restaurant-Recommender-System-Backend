@@ -26,7 +26,14 @@ const ReviewSchema = mongoose.Schema(
       type: String,
       required: true
     },
-
+    sentiment: {
+      type: String,
+      required: true
+    },
+    polarity: {
+      type: Number,
+      required: true
+    },
   },
   { timestamps: true }
 );
