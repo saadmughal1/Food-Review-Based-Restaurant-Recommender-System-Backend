@@ -11,6 +11,11 @@ const searchPlaces = async (req, res) => {
     const keyword = req.query.keyword;
     const location = req.query.location;
 
+    const userId = req.headers['userid'];
+
+
+
+
     if (!keyword) {
         throw new ApiError(400, "Keyword is required")
     }
@@ -39,12 +44,60 @@ const searchPlaces = async (req, res) => {
             throw new ApiError(404, "No places found for " + keyword)
         }
 
-        return res.json(places);
+
+        if (!userId) {
+            return res.json(places);
+        }
+
+        const filteredPlaces = await reviewBaseFiltering(places, userId)
+
+        return res.json(filteredPlaces);
+
+
     } catch (error) {
         console.log(error)
         throw new ApiError(500, "Failed to fetch places")
     }
 }
+
+
+const reviewBaseFiltering = async (places, userId) => {
+    const placeIds = places.map(place => place.place_id);
+    const allReviews = await Review.find({ placeId: { $in: placeIds }, user: userId }).lean();
+    const reviewsByPlace = {};
+
+    allReviews.forEach(review => {
+        if (!reviewsByPlace[review.placeId]) {
+            reviewsByPlace[review.placeId] = [];
+        }
+        reviewsByPlace[review.placeId].push(review);
+    });
+
+    const filteredPlaces = places.filter(place => {
+        const reviews = reviewsByPlace[place.place_id] || [];
+
+        if (reviews.length === 0) {
+            return true;
+        }
+
+        let positive = 0, negative = 0, neutral = 0;
+
+        reviews.forEach(r => {
+            if (r.sentiment === "positive") positive++;
+            else if (r.sentiment === "negative") negative++;
+            else neutral++;
+        });
+
+        return negative < positive + neutral;
+    });
+    return filteredPlaces
+}
+
+
+
+
+
+
 
 const place = async (req, res) => {
     const { placeid } = req.params;
