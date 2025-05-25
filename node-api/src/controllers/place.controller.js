@@ -10,18 +10,13 @@ const API_KEY = process.env.GOOGLE_MAP_API_KEY
 const searchPlaces = async (req, res) => {
     const keyword = req.query.keyword;
     const location = req.query.location;
-
     const userId = req.headers['userid'];
 
-
-
-
     if (!keyword) {
-        throw new ApiError(400, "Keyword is required")
+        throw new ApiError(400, "Keyword is required");
     }
 
     try {
-
         const searchParams = {
             query: keyword,
             key: API_KEY,
@@ -32,33 +27,46 @@ const searchPlaces = async (req, res) => {
             searchParams.radius = 10000;
         }
 
-        const searchResponse = await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json',
-            {
-                params: searchParams
+        let filteredPlaces = [];
+        let nextPageToken = null;
+        let attempts = 0;
+
+        do {
+            if (nextPageToken) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                searchParams.pagetoken = nextPageToken;
             }
-        );
 
-        const places = searchResponse.data.results;
+            const response = await axios.get('https://maps.googleapis.com/maps/api/place/textsearch/json', {
+                params: searchParams,
+            });
 
-        if (places.length === 0) {
-            throw new ApiError(404, "No places found for " + keyword)
-        }
+            const places = response.data.results || [];
 
+            if (places.length === 0 && filteredPlaces.length === 0) {
+                throw new ApiError(404, "No places found for " + keyword);
+            }
 
-        if (!userId) {
-            return res.json(places);
-        }
+            if (!userId) {
+                filteredPlaces.push(...places);
+            } else {
+                const currentFiltered = await reviewBaseFiltering(places, userId);
+                filteredPlaces.push(...currentFiltered);
+            }
 
-        const filteredPlaces = await reviewBaseFiltering(places, userId)
+            nextPageToken = response.data.next_page_token;
+
+            attempts++;
+        } while (filteredPlaces.length < 20 && nextPageToken && attempts < 3);
 
         return res.json(filteredPlaces);
 
-
     } catch (error) {
-        console.log(error)
-        throw new ApiError(500, "Failed to fetch places")
+        console.log(error);
+        throw new ApiError(500, "Failed to fetch places");
     }
-}
+};
+
 
 
 const reviewBaseFiltering = async (places, userId) => {
