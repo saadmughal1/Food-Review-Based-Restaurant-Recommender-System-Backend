@@ -20,6 +20,14 @@ const add = async (req, res) => {
     res.status(200).json(new ApiResponse(201, review, "Review added successfully"));
 }
 
+const myReviews = async (req, res) => {
+    const _id = req.user;
+
+    const review = await Review.find({ user: _id });
+
+    res.status(200).json(new ApiResponse(200, review, "Review fetched successfully"));
+}
 
 
-export { add };
+
+export { add, myReviews };
