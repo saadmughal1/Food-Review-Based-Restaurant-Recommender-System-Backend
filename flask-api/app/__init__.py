@@ -1,18 +1,14 @@
-from flask import Flask, jsonify
-from app.exception import Error
-
+from flask import Flask
 from app.routes.sentiment_routes import sentiment_bp
+from app.routes.prompt_routes import prompt_bp
+from dotenv import load_dotenv
 
-
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
     
-    @app.errorhandler(Error)
-    def handle_bad_request(error):
-        return jsonify({'error': error.message}),error.status
-
-
     app.register_blueprint(sentiment_bp, url_prefix='/api/sentiment')
-
+    app.register_blueprint(prompt_bp, url_prefix='/api/prompt')
+    
     return app
