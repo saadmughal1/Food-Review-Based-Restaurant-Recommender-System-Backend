@@ -101,12 +101,6 @@ const reviewBaseFiltering = async (places, userId) => {
     return filteredPlaces
 }
 
-
-
-
-
-
-
 const place = async (req, res) => {
     const { placeid } = req.params;
 
@@ -149,5 +143,28 @@ const place = async (req, res) => {
     }
 };
 
+const photoProxy = async (req, res) => {
+    const photoRef = req.query.photoRef;
 
-export { searchPlaces, place };
+    if (!photoRef) {
+        throw new ApiError(400, "Missing photoRef");
+    }
+
+    const googleUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoRef}&key=${API_KEY}`;
+
+    try {
+        const response = await axios({
+            method: "GET",
+            url: googleUrl,
+            responseType: "stream",
+        });
+
+        res.setHeader("Content-Type", response.headers["content-type"]);
+        response.data.pipe(res);
+    } catch (err) {
+        console.error("Photo proxy error:", err.message);
+        throw new ApiError(500, "Error fetching image");
+    }
+};
+
+export { searchPlaces, place, photoProxy };
