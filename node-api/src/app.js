@@ -21,6 +21,7 @@ import PlaceRouter from "./routes/place.routes.js";
 import PreferenceRouter from "./routes/preference.routes.js";
 import ReviewRouter from "./routes/review.routes.js";
 import LikeRouter from "./routes/like.routes.js"
+import RecommendationRouter from "./routes/recommentation.routes.js"
 
 
 app.use("/api/user/", UserRouter);
@@ -28,6 +29,7 @@ app.use("/api/place/", PlaceRouter);
 app.use("/api/preference/", PreferenceRouter);
 app.use("/api/review/", ReviewRouter);
 app.use("/api/like/", LikeRouter);
+app.use("/api/recommendation/", RecommendationRouter)
 
 
 app.use("/", (_, res) => res.send("server is running"));
