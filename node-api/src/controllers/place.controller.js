@@ -27,7 +27,7 @@ const searchPlaces = async (req, res) => {
             searchParams.radius = 10000;
         }
 
-        let filteredPlaces = [];
+        let highRatedPlaces = [];
         let nextPageToken = null;
         let attempts = 0;
 
@@ -43,23 +43,37 @@ const searchPlaces = async (req, res) => {
 
             const places = response.data.results || [];
 
-            if (places.length === 0 && filteredPlaces.length === 0) {
+            if (places.length === 0 && highRatedPlaces.length === 0) {
                 throw new ApiError(404, "No places found for " + keyword);
             }
 
+            // Filter places with rating >= 4
+            const filteredByRating = places.filter(place => place.rating >= 4);
+
             if (!userId) {
-                filteredPlaces.push(...places);
+                highRatedPlaces.push(...filteredByRating);
             } else {
-                const currentFiltered = await reviewBaseFiltering(places, userId);
-                filteredPlaces.push(...currentFiltered);
+                const currentFiltered = await reviewBaseFiltering(filteredByRating, userId);
+                highRatedPlaces.push(...currentFiltered);
             }
 
             nextPageToken = response.data.next_page_token;
-
             attempts++;
-        } while (filteredPlaces.length < 20 && nextPageToken && attempts < 3);
 
-        return res.json(filteredPlaces);
+            // Stop if we've reached 20 high-rated places
+            if (highRatedPlaces.length >= 20) {
+                break;
+            }
+
+        } while (highRatedPlaces.length < 20 && nextPageToken && attempts < 3);
+
+        // Sort in DESCENDING order (highest rating first)
+        highRatedPlaces.sort((a, b) => b.rating - a.rating);
+
+        // Return exactly 20 places (or all available if less than 20)
+        const finalResults = highRatedPlaces.slice(0, 20);
+
+        return res.json(finalResults);
 
     } catch (error) {
         console.log(error);
