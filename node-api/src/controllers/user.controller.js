@@ -199,5 +199,12 @@ const update = async (req, res) => {
 };
 
 
+const getAllUsers = async (req, res) => {
+  const users = await User.find();
+  res
+    .status(200)
+    .json(new ApiResponse(200, users, "User fetched successfully"));
+}
 
-export { signup, login, logout, refreshAccessToken, update };
+
+export { signup, login, logout, refreshAccessToken, update, getAllUsers };
