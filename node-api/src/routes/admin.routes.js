@@ -8,6 +8,7 @@ import {
   signup,
   login,
   logout,
+  update
 } from "../controllers/admin.controller.js";
 
 import {
@@ -21,14 +22,16 @@ import {
 router.route("/login").post(asyncHandler(login));
 router.route("/signup").post(asyncHandler(signup));
 router.route("/logout").post(verifyAdminJWT, asyncHandler(logout));
+router.route("/update").patch(asyncHandler(update));
+
 
 // admin user operations
-
 router.route("/all-users").get(asyncHandler(getAllUsers));
 router.route("/add-user").post(asyncHandler(userSignUp));
 
 router.route("/update-user/:id").patch(asyncHandler(updateUserByAdmin));
 router.route("/delete-user").delete(asyncHandler(deleteUser));
+
 
 
 export default router;
