@@ -135,6 +135,16 @@ const update = async (req, res) => {
     throw new ApiError(401, "Invalid current password");
   }
 
+  const existingUsernameAdmin = await Admin.findOne({
+    username,
+    _id: { $ne: admin._id }
+  });
+
+  if (existingUsernameAdmin) {
+    throw new ApiError(409, "Username already in use by another admin");
+  }
+
+
   admin.password = newPassword;
   admin.username = username
   await admin.save();
@@ -151,9 +161,9 @@ const update = async (req, res) => {
   res.status(200).json(
     new ApiResponse(200, {
       _id: admin._id,
-        username,
-        accessToken,
-        refreshToken
+      username,
+      accessToken,
+      refreshToken
     }, "Admin settings updated successfully")
   );
 };
