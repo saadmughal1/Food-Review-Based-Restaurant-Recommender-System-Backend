@@ -198,7 +198,7 @@ const update = async (req, res) => {
     .json(new ApiResponse(200, updatedUser, "User updated successfully"));
 };
 
-
+// admin functions
 const getAllUsers = async (req, res) => {
   const users = await User.find();
   res
@@ -206,5 +206,63 @@ const getAllUsers = async (req, res) => {
     .json(new ApiResponse(200, users, "User fetched successfully"));
 }
 
+const deleteUser = async (req, res) => {
+  const { userId } = req.body;
 
-export { signup, login, logout, refreshAccessToken, update, getAllUsers };
+  if (!userId) {
+    throw new ApiError(400, "User ID is required");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  await User.findByIdAndDelete(userId);
+
+  const deletedUser = {
+    id: user._id,
+    email: user.email,
+    username: user.username
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, deletedUser, "User deleted successfully"));
+};
+
+const updateUserByAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { firstName, lastName, email } = req.body;
+
+  if (
+    [firstName, lastName, email].some(
+      (field) => !field || field.trim() === ""
+    )
+  ) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser && existingUser._id.toString() !== id) {
+    throw new ApiError(409, "Email is already in use by another user");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    {
+      firstName,
+      lastName,
+      email,
+    },
+    { new: true }
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "User updated successfully"));
+};
+
+
+export { signup, login, logout, refreshAccessToken, update, getAllUsers, deleteUser, updateUserByAdmin };
